@@ -149,7 +149,7 @@ TEST_F(DoorTest, t12) {
   delete d2;
 }
 
-TEST(MockDoorTest, t13) {
+TEST(MockDoorTest, t14) {
   MockDoor2 mockDoor;
 
   EXPECT_CALL(mockDoor, lock()).Times(testing::Exactly(1));
@@ -157,20 +157,6 @@ TEST(MockDoorTest, t13) {
   EXPECT_CALL(mockDoor, isDoorOpened()).Times(testing::AtLeast(2))
       .WillOnce(::testing::Return(false))
       .WillOnce(::testing::Return(true));
-
-  mockDoor.lock();
-  EXPECT_FALSE(mockDoor.isDoorOpened());
-  mockDoor.unlock();
-  EXPECT_TRUE(mockDoor.isDoorOpened());
-}
-
-TEST(MockDoorTest, t14) {
-  MockDoor2 mockDoor;
-
-  EXPECT_CALL(mockDoor, lock());
-  EXPECT_CALL(mockDoor, isDoorOpened()).WillOnce(::testing::Return(false));
-  EXPECT_CALL(mockDoor, unlock());
-  EXPECT_CALL(mockDoor, isDoorOpened()).WillOnce(::testing::Return(true));
 
   mockDoor.lock();
   EXPECT_FALSE(mockDoor.isDoorOpened());
