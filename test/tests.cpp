@@ -152,9 +152,9 @@ TEST_F(DoorTest, t12) {
 TEST(MockDoorTest, t13) {
   MockDoor2 mockDoor;
 
-  EXPECT_CALL(mockDoor, lock()).Times(Exactly(1));
-  EXPECT_CALL(mockDoor, unlock()).Times(Exactly(1));
-  EXPECT_CALL(mockDoor, isDoorOpened()).Times(AtLeast(2))
+  EXPECT_CALL(mockDoor, lock()).Times(testing::Exactly(1));
+  EXPECT_CALL(mockDoor, unlock()).Times(testing::Exactly(1));
+  EXPECT_CALL(mockDoor, isDoorOpened()).Times(testing::AtLeast(2))
       .WillOnce(::testing::Return(false))
       .WillOnce(::testing::Return(true));
 
