@@ -9,159 +9,135 @@
 using ::testing::_;
 using ::testing::Mock;
 
-// Mock класс для тестирования TimerClient
-class MockTimerClient : public TimerClient {
+class MockTimer : public TimerClient {
  public:
   MOCK_METHOD(void, Timeout, (), (override));
 };
 
-// Mock класс для тестирования Door
-class MockDoor : public Door {
- public:
-  MOCK_METHOD(void, lock, (), (override));
-  MOCK_METHOD(void, unlock, (), (override));
-  MOCK_METHOD(bool, isDoorOpened, (), (override));
-};
-
-// Тестовый класс для TimedDoor
-class TimedDoorTestUnique : public ::testing::Test {
+class DoorTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    testDoor = new TimedDoor(2);
+    door = new TimedDoor(2);
   }
 
   void TearDown() override {
-    delete testDoor;
-  }
-
-  TimedDoor* testDoor;
-};
-
-// Тестовый класс для DoorTimerAdapter
-class DoorTimerAdapterTestUnique : public ::testing::Test {
- protected:
-  void SetUp() override {
-    door = new TimedDoor(3);
-    adapter = new DoorTimerAdapter(*door);
-  }
-
-  void TearDown() override {
-    delete adapter;
     delete door;
   }
 
   TimedDoor* door;
-  DoorTimerAdapter* adapter;
 };
 
-// Тестовый класс для Timer
-class TimerTestUnique : public ::testing::Test {
+class AdapterTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    timer = new Timer();
-    mockClient = new MockTimerClient();
+        td = new TimedDoor(3);
+        adap = new DoorTimerAdapter(*td);
   }
 
   void TearDown() override {
-    delete timer;
-    delete mockClient;
+    delete adap;
+    delete td;
   }
 
-  Timer* timer;
-  MockTimerClient* mockClient;
+  TimedDoor* td;
+  DoorTimerAdapter* adap;
 };
 
-// Тест 1: Проверка создания двери с корректным таймаутом
-TEST_F(TimedDoorTestUnique, ConstructorSetsCorrectTimeout) {
-  EXPECT_EQ(testDoor->getTimeOut(), 2);
-  EXPECT_FALSE(testDoor->isDoorOpened());
+class TimerTest2 : public ::testing::Test {
+ protected:
+  void SetUp() override {
+        tim = new Timer();
+        mClient = new MockTimer();
+  }
+
+  void TearDown() override {
+    delete tim;
+    delete mClient;
+  }
+
+  Timer* tim;
+  MockTimer* mClient;
+};
+
+TEST_F(DoorTest, t1) {
+  EXPECT_EQ(door->getTimeOut(), 2);
+  EXPECT_FALSE(door->isDoorOpened());
 }
 
-// Тест 2: Проверка метода lock() закрывает дверь
-TEST_F(TimedDoorTestUnique, LockClosesDoor) {
-  testDoor->unlock();
-  EXPECT_TRUE(testDoor->isDoorOpened());
-  testDoor->lock();
-  EXPECT_FALSE(testDoor->isDoorOpened());
-}
-
-// Тест 3: Проверка метода unlock() открывает дверь
-TEST_F(TimedDoorTestUnique, UnlockOpensDoor) {
-  testDoor->lock();
-  EXPECT_FALSE(testDoor->isDoorOpened());
-  testDoor->unlock();
-  EXPECT_TRUE(testDoor->isDoorOpened());
-}
-
-// Тест 4: Проверка метода throwState выбрасывает исключение
-TEST_F(TimedDoorTestUnique, ThrowStateThrowsException) {
-  EXPECT_THROW(testDoor->throwState(), std::runtime_error);
-}
-
-// Тест 5: Проверка DoorTimerAdapter вызывает throwState когда дверь открыта
-TEST_F(DoorTimerAdapterTestUnique, TimeoutCallsThrowStateWhenDoorOpened) {
+TEST_F(DoorTest, t2) {
   door->unlock();
   EXPECT_TRUE(door->isDoorOpened());
-  EXPECT_THROW(adapter->Timeout(), std::runtime_error);
-}
-
-// Тест 6: Проверка DoorTimerAdapter не вызывает исключение когда дверь закрыта
-TEST_F(DoorTimerAdapterTestUnique, TimeoutDoesNotThrowWhenDoorClosed) {
   door->lock();
   EXPECT_FALSE(door->isDoorOpened());
-  EXPECT_NO_THROW(adapter->Timeout());
 }
 
-// Тест 7: Проверка Timer вызывает Timeout у клиента
-TEST_F(TimerTestUnique, TimerCallsTimeoutOnClient) {
-  EXPECT_CALL(*mockClient, Timeout()).Times(1);
-  timer->tregister(0, mockClient);
+TEST_F(DoorTest, t3) {
+  door->lock();
+  EXPECT_FALSE(door->isDoorOpened());
+  door->unlock();
+  EXPECT_TRUE(door->isDoorOpened());
 }
 
-// Тест 8: Проверка Timer с нулевым клиентом не вызывает ошибку
-TEST_F(TimerTestUnique, TimerWithNullClientDoesNotCrash) {
-  EXPECT_NO_THROW(timer->tregister(1, nullptr));
+TEST_F(DoorTest, t4) {
+  EXPECT_THROW(door->throwState(), std::runtime_error);
 }
 
-// Тест 9: Интеграционный тест - открытая дверь вызывает исключение
-TEST_F(TimedDoorTestUnique, OpenDoorThrowsExceptionAfterTimeout) {
-  Timer testTimer;
-  testDoor->unlock();
-  EXPECT_TRUE(testDoor->isDoorOpened());
+TEST_F(AdapterTest, t5) {
+  td->unlock();
+  EXPECT_TRUE(td->isDoorOpened());
+  EXPECT_THROW(adap->Timeout(), std::runtime_error);
+}
 
-  DoorTimerAdapter testAdapter(*testDoor);
+TEST_F(AdapterTest, t6) {
+  td->lock();
+  EXPECT_FALSE(td->isDoorOpened());
+  EXPECT_NO_THROW(adap->Timeout());
+}
+
+TEST_F(TimerTest2, t7) {
+  EXPECT_CALL(*mClient, Timeout()).Times(1);
+  tim->tregister(0, mClient);
+}
+
+TEST_F(TimerTest2, t8) {
+  EXPECT_NO_THROW(tim->tregister(1, nullptr));
+}
+
+TEST_F(DoorTest, t9) {
+  Timer tm;
+  door->unlock();
+  EXPECT_TRUE(door->isDoorOpened());
+
+  DoorTimerAdapter ad(*door);
 
   EXPECT_THROW({
-    testTimer.tregister(testDoor->getTimeOut(), &testAdapter);
+    tm.tregister(door->getTimeOut(), &ad);
   }, std::runtime_error);
 }
 
-// Тест 10: Интеграционный тест - закрытая дверь без исключения
-TEST_F(TimedDoorTestUnique, ClosedDoorDoesNotThrowExceptionAfterTimeout) {
-  Timer testTimer;
-  testDoor->lock();
-  EXPECT_FALSE(testDoor->isDoorOpened());
+TEST_F(DoorTest, t10) {
+  Timer tm;
+  door->lock();
+  EXPECT_FALSE(door->isDoorOpened());
 
-  DoorTimerAdapter testAdapter(*testDoor);
+  DoorTimerAdapter ad(*door);
 
   EXPECT_NO_THROW({
-    testTimer.tregister(testDoor->getTimeOut(), &testAdapter);
+    tm.tregister(door->getTimeOut(), &ad);
   });
 }
 
-// Тест 11: Проверка многократного открытия/закрытия
-TEST_F(TimedDoorTestUnique, MultipleOpenCloseCyclesWorkCorrectly) {
+TEST_F(DoorTest, t11) {
   for (int i = 0; i < 5; i++) {
-    testDoor->unlock();
-    EXPECT_TRUE(testDoor->isDoorOpened());
-    testDoor->lock();
-    EXPECT_FALSE(testDoor->isDoorOpened());
+    door->unlock();
+    EXPECT_TRUE(door->isDoorOpened());
+    door->lock();
+    EXPECT_FALSE(door->isDoorOpened());
   }
 }
 
-// Тест 12: Проверка что getTimeOut возвращает правильное значение
-TEST_F(TimedDoorTestUnique, GetTimeOutReturnsCorrectValue) {
-  TimedDoor* anotherDoor = new TimedDoor(10);
-  EXPECT_EQ(anotherDoor->getTimeOut(), 10);
-  delete anotherDoor;
+TEST_F(DoorTest, t12) {
+  TimedDoor* d2 = new TimedDoor(10);
+  EXPECT_EQ(d2->getTimeOut(), 10);
+  delete d2;
 }
