@@ -25,3 +25,4 @@ target_link_libraries(${PROJECT_NAME}.test
 
 install(TARGETS ${PROJECT_NAME}.test
         DESTINATION "${tool_dest}")
+        
