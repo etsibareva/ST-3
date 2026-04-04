@@ -5,11 +5,12 @@
 
 class DoorTimerAdapter;
 class Timer;
+class Door;
+class TimedDoor;
 
 class TimerClient {
  public:
   virtual void Timeout() = 0;
-  virtual ~TimerClient() = default;
 };
 
 class Door {
@@ -17,34 +18,32 @@ class Door {
   virtual void lock() = 0;
   virtual void unlock() = 0;
   virtual bool isDoorOpened() = 0;
-  virtual ~Door() = default;
 };
 
 class DoorTimerAdapter : public TimerClient {
  private:
-  class TimedDoor& door;
+  TimedDoor& door;
  public:
   explicit DoorTimerAdapter(TimedDoor&);
-  void Timeout() override;
+  void Timeout();
 };
 
 class TimedDoor : public Door {
  private:
-  DoorTimerAdapter* adapter;
+  DoorTimerAdapter * adapter;
   int iTimeout;
   bool isOpened;
  public:
   explicit TimedDoor(int);
-  ~TimedDoor() override = default;
-  bool isDoorOpened() override;
-  void unlock() override;
-  void lock() override;
-  int getTimeOut() const;
+  bool isDoorOpened();
+  void unlock();
+  void lock();
+  int  getTimeOut() const;
   void throwState();
 };
 
 class Timer {
-  TimerClient* client = nullptr;
+  TimerClient *client;
   void sleep(int);
  public:
   void tregister(int, TimerClient*);
