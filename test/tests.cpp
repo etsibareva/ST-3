@@ -14,6 +14,13 @@ class MockTimer : public TimerClient {
   MOCK_METHOD(void, Timeout, (), (override));
 };
 
+class MockDoor2 : public Door {
+ public:
+  MOCK_METHOD(void, lock, (), (override));
+  MOCK_METHOD(void, unlock, (), (override));
+  MOCK_METHOD(bool, isDoorOpened, (), (override));
+};
+
 class DoorTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -140,4 +147,33 @@ TEST_F(DoorTest, t12) {
   TimedDoor* d2 = new TimedDoor(10);
   EXPECT_EQ(d2->getTimeOut(), 10);
   delete d2;
+}
+
+TEST(MockDoorTest, t13) {
+  MockDoor2 mockDoor;
+  
+  EXPECT_CALL(mockDoor, lock()).Times(Exactly(1));
+  EXPECT_CALL(mockDoor, unlock()).Times(Exactly(1));
+  EXPECT_CALL(mockDoor, isDoorOpened()).Times(AtLeast(2))
+      .WillOnce(::testing::Return(false))
+      .WillOnce(::testing::Return(true));
+  
+  mockDoor.lock();
+  EXPECT_FALSE(mockDoor.isDoorOpened());
+  mockDoor.unlock();
+  EXPECT_TRUE(mockDoor.isDoorOpened());
+}
+
+TEST(MockDoorTest, t14) {
+  MockDoor2 mockDoor;
+  
+  EXPECT_CALL(mockDoor, lock());
+  EXPECT_CALL(mockDoor, isDoorOpened()).WillOnce(::testing::Return(false));
+  EXPECT_CALL(mockDoor, unlock());
+  EXPECT_CALL(mockDoor, isDoorOpened()).WillOnce(::testing::Return(true));
+  
+  mockDoor.lock();
+  EXPECT_FALSE(mockDoor.isDoorOpened());
+  mockDoor.unlock();
+  EXPECT_TRUE(mockDoor.isDoorOpened());
 }
