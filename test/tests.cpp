@@ -37,8 +37,8 @@ class DoorTest : public ::testing::Test {
 class AdapterTest : public ::testing::Test {
  protected:
   void SetUp() override {
-        td = new TimedDoor(3);
-        adap = new DoorTimerAdapter(*td);
+    td = new TimedDoor(3);
+    adap = new DoorTimerAdapter(*td);
   }
 
   void TearDown() override {
@@ -53,8 +53,8 @@ class AdapterTest : public ::testing::Test {
 class TimerTest2 : public ::testing::Test {
  protected:
   void SetUp() override {
-        tim = new Timer();
-        mClient = new MockTimer();
+    tim = new Timer();
+    mClient = new MockTimer();
   }
 
   void TearDown() override {
@@ -151,13 +151,13 @@ TEST_F(DoorTest, t12) {
 
 TEST(MockDoorTest, t13) {
   MockDoor2 mockDoor;
-  
+
   EXPECT_CALL(mockDoor, lock()).Times(Exactly(1));
   EXPECT_CALL(mockDoor, unlock()).Times(Exactly(1));
   EXPECT_CALL(mockDoor, isDoorOpened()).Times(AtLeast(2))
       .WillOnce(::testing::Return(false))
       .WillOnce(::testing::Return(true));
-  
+
   mockDoor.lock();
   EXPECT_FALSE(mockDoor.isDoorOpened());
   mockDoor.unlock();
@@ -166,12 +166,12 @@ TEST(MockDoorTest, t13) {
 
 TEST(MockDoorTest, t14) {
   MockDoor2 mockDoor;
-  
+
   EXPECT_CALL(mockDoor, lock());
   EXPECT_CALL(mockDoor, isDoorOpened()).WillOnce(::testing::Return(false));
   EXPECT_CALL(mockDoor, unlock());
   EXPECT_CALL(mockDoor, isDoorOpened()).WillOnce(::testing::Return(true));
-  
+
   mockDoor.lock();
   EXPECT_FALSE(mockDoor.isDoorOpened());
   mockDoor.unlock();
