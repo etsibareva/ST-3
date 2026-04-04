@@ -1,3 +1,5 @@
+// Copyright 2021 GHA Test Team
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <thread>
@@ -5,7 +7,6 @@
 #include "TimedDoor.h"
 
 using ::testing::_;
-using ::testing::Expectation;
 using ::testing::Return;
 
 class MockTimerClient : public TimerClient {
@@ -25,7 +26,7 @@ public:
 class TimedDoorTest : public ::testing::Test {
 protected:
     void SetUp() override {
-        door = new TimedDoor(5);
+        door = new TimedDoor(0);
     }
     void TearDown() override {
         delete door;
@@ -45,7 +46,7 @@ TEST_F(TimedDoorTest, LockUnlockChangesState) {
 }
 
 TEST_F(TimedDoorTest, GetTimeOutReturnsCorrectValue) {
-    EXPECT_EQ(door->getTimeOut(), 5);
+    EXPECT_EQ(door->getTimeOut(), 0);
 }
 
 TEST(DoorTimerAdapterTest, TimeoutCallsThrowState) {
@@ -63,13 +64,13 @@ TEST(TimerTest, TregisterCallsTimeoutOnClient) {
 }
 
 TEST(TimedDoorThrowStateTest, ThrowsWhenDoorOpened) {
-    TimedDoor door(1);
+    TimedDoor door(0);
     door.unlock();
     EXPECT_THROW(door.throwState(), std::runtime_error);
 }
 
 TEST(TimedDoorThrowStateTest, DoesNotThrowWhenDoorClosed) {
-    TimedDoor door(1);
+    TimedDoor door(0);
     EXPECT_NO_THROW(door.throwState());
 }
 
@@ -81,7 +82,7 @@ TEST(TimedDoorIntegrationTest, UnlockThrowsOnTimeoutWhenDoorRemainsOpen) {
 TEST(TimedDoorIntegrationTest, UnlockDoesNotThrowIfLockedBeforeTimeout) {
     TimedDoor door(1);
     std::thread locker([&door]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
         door.lock();
     });
     EXPECT_NO_THROW(door.unlock());

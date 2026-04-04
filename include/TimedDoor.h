@@ -5,8 +5,6 @@
 
 class DoorTimerAdapter;
 class Timer;
-class Door;
-class TimedDoor;
 
 class TimerClient {
  public:
@@ -24,7 +22,7 @@ class Door {
 
 class DoorTimerAdapter : public TimerClient {
  private:
-  TimedDoor& door;
+  class TimedDoor& door;
  public:
   explicit DoorTimerAdapter(TimedDoor&);
   void Timeout() override;
@@ -32,7 +30,7 @@ class DoorTimerAdapter : public TimerClient {
 
 class TimedDoor : public Door {
  private:
-  DoorTimerAdapter * adapter;
+  DoorTimerAdapter* adapter;
   int iTimeout;
   bool isOpened;
  public:
@@ -41,12 +39,12 @@ class TimedDoor : public Door {
   bool isDoorOpened() override;
   void unlock() override;
   void lock() override;
-  int  getTimeOut() const;
-  virtual void throwState();
+  int getTimeOut() const;
+  void throwState();
 };
 
 class Timer {
-  TimerClient *client = nullptr;
+  TimerClient* client = nullptr;
   void sleep(int);
  public:
   void tregister(int, TimerClient*);
