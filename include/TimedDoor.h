@@ -25,7 +25,7 @@ class DoorTimerAdapter : public TimerClient {
   TimedDoor& door;
  public:
   explicit DoorTimerAdapter(TimedDoor&);
-  void Timeout() override;
+  virtual void Timeout() override;
 };
 
 class TimedDoor : public Door {
@@ -35,11 +35,11 @@ class TimedDoor : public Door {
   bool isOpened;
  public:
   explicit TimedDoor(int);
-  bool isDoorOpened() override;
-  void unlock() override;
-  void lock() override;
-  int  getTimeOut() const;
-  void throwState();
+  virtual bool isDoorOpened() override;
+  virtual void unlock() override;
+  virtual void lock() override;
+  int  getTimeOut();
+  virtual void throwState();
 };
 
 class Timer {
