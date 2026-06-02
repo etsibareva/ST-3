@@ -25,7 +25,7 @@ class DoorTimerAdapter : public TimerClient {
   TimedDoor& door;
  public:
   explicit DoorTimerAdapter(TimedDoor&);
-  virtual void Timeout() override;
+  void Timeout() override;
 };
 
 class TimedDoor : public Door {
