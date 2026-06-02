@@ -100,19 +100,19 @@ TEST_F(TestTimedDoorAll, TimeoutNoThrowWhenDoorClosedTooLong) {
     EXPECT_NO_THROW(timer->tregister(1, doorTimedAdapter));
 }
 
-TEST_F(TestTimedDoorAll, TimerCallsClientTimeout) {
+TEST_F(TestTimedDoorAll, TimerCallsTimeout) {
     EXPECT_CALL(*mockTimerClient, Timeout()).Times(Exactly(1));
     timer->tregister(1, mockTimerClient);
 }
 
-TEST_F(TestTimedDoorAll, AdapterCallsDoorMethodsOnTimeout) {
+TEST_F(TestTimedDoorAll, AdapterTimeout) {
     DoorTimerAdapter adapter(*mockTimedDoor);
     EXPECT_CALL(*mockTimedDoor, isDoorOpened()).WillOnce(Return(true));
-    EXPECT_CALL(*mockTimedDoor, throwState()).Times(Exactly(1));
+    EXPECT_CALL(*mockTimedDoor, throwState()).Times(Exactly(1)).WillOnce(::testing::Throw(std::runtime_error("")));;
     EXPECT_THROW(adapter.Timeout(), std::runtime_error);
 }
 
-TEST_F(TestTimedDoorAll, AdapterDoesNotCallThrowStateWhenDoorClosed) {
+TEST_F(TestTimedDoorAll, AdapterWithDoorClosed) {
     DoorTimerAdapter adapter(*mockTimedDoor);
     
     EXPECT_CALL(*mockTimedDoor, isDoorOpened()).WillOnce(Return(false));
