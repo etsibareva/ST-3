@@ -11,13 +11,13 @@ using ::testing::Return;
 using ::testing::Exactly;
 
 class MockTimerClient : public TimerClient {
-public:
+ public:
     MOCK_METHOD(void, Timeout, (), (override));
 };
 
 class MockTimedDoor : public TimedDoor {
-public:
-    MockTimedDoor(int timeout) : TimedDoor(timeout) {}
+ public:
+    explicit MockTimedDoor(int timeout) : TimedDoor(timeout) {}
     MOCK_METHOD(void, lock, (), (override));
     MOCK_METHOD(void, unlock, (), (override));
     MOCK_METHOD(bool, isDoorOpened, (), (override));
@@ -25,13 +25,13 @@ public:
 };
 
 class MockDoorTimerAdapter : public DoorTimerAdapter {
-public:
-    MockDoorTimerAdapter(TimedDoor& door) : DoorTimerAdapter(door) {}
+ public:
+    explicit MockDoorTimerAdapter(TimedDoor& door) : DoorTimerAdapter(door) {}
     MOCK_METHOD(void, Timeout, (), (override));
 };
 
 class TestTimedDoorAll : public ::testing::Test {
-protected:
+ protected:
     void SetUp() override {
         timedDoor = new TimedDoor(4);
         mockTimedDoor = new MockTimedDoor(4);
@@ -74,7 +74,7 @@ TEST_F(TestTimedDoorAll, LockClosesDoor) {
 TEST_F(TestTimedDoorAll, TimerRegisterCorrect) {
     timedDoor->lock();
     EXPECT_NO_THROW(timer->tregister(
-      timedDoor->getTimeOut(), 
+      timedDoor->getTimeOut(),
       doorTimedAdapter));
 }
 
@@ -94,7 +94,7 @@ TEST_F(TestTimedDoorAll, MockDoorLockClosesDoor) {
 
 TEST_F(TestTimedDoorAll, TimeoutThrowsWhenDoorOpenedTooLong) {
     timedDoor->unlock();
-    EXPECT_THROW(timer->tregister(1, doorTimedAdapter), 
+    EXPECT_THROW(timer->tregister(1, doorTimedAdapter),
                  std::runtime_error);
 }
 
@@ -119,9 +119,7 @@ TEST_F(TestTimedDoorAll, AdapterTimeout) {
 
 TEST_F(TestTimedDoorAll, AdapterWithDoorClosed) {
     DoorTimerAdapter adapter(*mockTimedDoor);
-    
     EXPECT_CALL(*mockTimedDoor, isDoorOpened()).WillOnce(Return(false));
     EXPECT_CALL(*mockTimedDoor, throwState()).Times(Exactly(0));
-    
     EXPECT_NO_THROW(adapter.Timeout());
 }

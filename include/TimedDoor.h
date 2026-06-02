@@ -35,9 +35,9 @@ class TimedDoor : public Door {
   bool isOpened;
  public:
   explicit TimedDoor(int);
-  virtual bool isDoorOpened() override;
-  virtual void unlock() override;
-  virtual void lock() override;
+  bool isDoorOpened() override;
+  void unlock() override;
+  void lock() override;
   int  getTimeOut();
   virtual void throwState();
 };
